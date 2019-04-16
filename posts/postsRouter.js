@@ -12,6 +12,21 @@ const jwtAuth = passport.authenticate("jwt", { session: false });
 // Fetch all posts
 router.get("/", (req, res) => {
   Post.find()
+    .sort("-votes")
+    .then(posts => {
+      res.json(posts.map(post => post.serialize()));
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ error: "Something went wrong" });
+    });
+});
+
+// Fetch by category
+router.get("/:category", (req, res) => {
+  const category = req.params.category;
+  Post.find({ category })
+    .sort("-votes")
     .then(posts => {
       res.json(posts.map(post => post.serialize()));
     })

@@ -45,6 +45,7 @@ postSchema.methods.serialize = function() {
     body: this.body,
     author: this.username,
     comments: this.comments,
+    category: this.category,
     votes: this.votes,
     created: this.created
   };
