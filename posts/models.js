@@ -19,48 +19,18 @@ const postSchema = mongoose.Schema({
   created: { type: Date, default: Date.now }
 });
 
-commentSchema.pre("find", function(next) {
-  this.populate("author");
-  next();
-});
-
-commentSchema.pre("findOne", function(next) {
-  this.populate("author");
-  next();
-});
-
-commentSchema.pre("findById", function(next) {
-  this.populate("author");
-  next();
-});
-
-commentSchema.virtual("username").get(function() {
-  return this.author.username;
-});
-
-commentSchema.methods.serialize = function() {
-  return {
-    id: this._id,
-    body: this.body,
-    author: this.username,
-    created: this.created
-  };
-};
-
-////////////////////////////////////
-
 postSchema.pre("find", function(next) {
-  this.populate("author");
+  this.populate("author").populate("comments.author", "username");
   next();
 });
 
 postSchema.pre("findOne", function(next) {
-  this.populate("author");
+  this.populate("author").populate("comments.author", "username");
   next();
 });
 
 postSchema.pre("findById", function(next) {
-  this.populate("author");
+  this.populate("author").populate("comments.author", "username");
   next();
 });
 
@@ -74,7 +44,7 @@ postSchema.methods.serialize = function() {
     title: this.title,
     body: this.body,
     author: this.username,
-    comments: this.comments.serialize(),
+    comments: this.comments,
     category: this.category,
     votes: this.votes,
     created: this.created
