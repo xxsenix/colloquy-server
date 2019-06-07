@@ -1,0 +1,11 @@
+language: node_js
+node_js: node
+services:
+- mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: ogG71YBkLkDveQ3VepVmyHVVEqehhKNO6Ywjwrx0JSNy/4fUBSUrv6SwmhwLTHJhBmR+SpagkAEcwozeJYTe88ZnvNquWIR/I51vqPRkeIL6VJ9uFvkofdgnh1L/2QEQxLlslBeRXStOvs9uX7DOlC4IIS6jdw2uZRtwwDHRy864mThDUoW6UTgG4902tuQEF5yypSeEFaWrAEtgp6qn1n88+ehqw5fEmIPXHqQ+NW/3kvdU3EIRYOkxR3347omQwUgDBCpGxw52MAWIQDY8VGmCzqfM/QQha5tR6yTLz1ndr4QZOk16+tB/yam+8siyVInkBuAAH53Xjz5LMN4D/U6RL5ewXsvpXzPajzsBK5U951hjeZxN6s4T4zMHJnepgRELsgha7ysmHc/2fjO3FE+jA4RJz97drLikARBXSV5AfahbrWZzdjZvaw0QzYf0ijt74SIf4yBVbuink+MKvRX08lVEh3mqj/oe/PVHU3BeMXbau0WKrCPVYYYih+Ip65B7pb3r2RW1hLE01iK3cRVr/FNsHa/kl50DSZeYPiKz9CGHrHq4ukQc53EG8FilQPVD29iCop1ChedMQE+xQ9iPSo7FniHUc2WUYTelUd97P59axFDxRpsV4yVRCcTPCp6g7kUEILjtKel4zfEz+ole5ZwM19/47YHcg1E+cvA=
+  app: agile-everglades-42902
+  on:
+    repo: xxsenix/colloquy-server

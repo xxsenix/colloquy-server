@@ -12,21 +12,7 @@ const jwtAuth = passport.authenticate("jwt", { session: false });
 // Fetch all posts
 router.get("/", (req, res) => {
   Post.find()
-    .sort("-votes")
-    .then(posts => {
-      res.json(posts.map(post => post.serialize()));
-    })
-    .catch(err => {
-      console.error(err);
-      res.status(500).json({ error: "Something went wrong" });
-    });
-});
-
-// Fetch by category
-router.get("/:category", (req, res) => {
-  const category = req.params.category;
-  Post.find({ category })
-    .sort("-votes")
+    .sort("-created")
     .then(posts => {
       res.json(posts.map(post => post.serialize()));
     })
@@ -37,8 +23,9 @@ router.get("/:category", (req, res) => {
 });
 
 // Fetch one post
-router.get("/:id", (req, res) => {
-  Post.findById(req.params.id)
+router.get("/:post", (req, res) => {
+  Post.findById(req.params.post)
+    .sort("-comments.created")
     .then(post => res.json(post.serialize()))
     .catch(err => {
       console.log(err);
@@ -57,6 +44,52 @@ router.post("/", jwtAuth, jsonParser, (req, res) => {
       return res.status(400).send(message);
     }
   }
+  const explicityTrimmedFields = ["title", "body"];
+  const nonTrimmedField = explicityTrimmedFields.find(
+    field => req.body[field].trim() !== req.body[field]
+  );
+
+  if (nonTrimmedField) {
+    return res.status(422).json({
+      code: 422,
+      reason: "ValidationError",
+      message: "Cannot start or end with whitespace",
+      location: nonTrimmedField
+    });
+  }
+
+  const sizedFields = {
+    title: {
+      min: 5,
+      max: 90
+    },
+    body: {
+      min: 5,
+      max: 90
+    }
+  };
+  const tooSmallField = Object.keys(sizedFields).find(
+    field =>
+      "min" in sizedFields[field] &&
+      req.body[field].trim().length < sizedFields[field].min
+  );
+  const tooLargeField = Object.keys(sizedFields).find(
+    field =>
+      "max" in sizedFields[field] &&
+      req.body[field].trim().length > sizedFields[field].max
+  );
+
+  if (tooSmallField || tooLargeField) {
+    return res.status(422).json({
+      code: 422,
+      reason: "ValidationError",
+      message: tooSmallField
+        ? `Must be at least ${sizedFields[tooSmallField].min} characters long`
+        : `Must be at most ${sizedFields[tooLargeField].max} characters long`,
+      location: tooSmallField || tooLargeField
+    });
+  }
+
   User.findOne({
     username: req.user.username
   }).then(user => {
@@ -86,7 +119,7 @@ router.delete("/:post", jwtAuth, (req, res) => {
   Post.findByIdAndRemove(req.params.post)
     .then(() => {
       console.log(`Deleted post with id \`${req.params.post}\``);
-      res.status(204).end();
+      res.status(201).json(req.params.post);
     })
     .catch(err => res.status(500).json({ message: "Something went wrong" }));
 });
@@ -131,6 +164,47 @@ router.post("/:post", jwtAuth, jsonParser, (req, res) => {
       return res.status(400).send(message);
     }
   }
+  const explicityTrimmedFields = ["body"];
+  const nonTrimmedField = explicityTrimmedFields.find(
+    field => req.body[field].trim() !== req.body[field]
+  );
+
+  if (nonTrimmedField) {
+    return res.status(422).json({
+      code: 422,
+      reason: "ValidationError",
+      message: "Cannot start or end with whitespace",
+      location: nonTrimmedField
+    });
+  }
+
+  const sizedFields = {
+    body: {
+      min: 1,
+      max: 90
+    }
+  };
+  const tooSmallField = Object.keys(sizedFields).find(
+    field =>
+      "min" in sizedFields[field] &&
+      req.body[field].trim().length < sizedFields[field].min
+  );
+  const tooLargeField = Object.keys(sizedFields).find(
+    field =>
+      "max" in sizedFields[field] &&
+      req.body[field].trim().length > sizedFields[field].max
+  );
+
+  if (tooSmallField || tooLargeField) {
+    return res.status(422).json({
+      code: 422,
+      reason: "ValidationError",
+      message: tooSmallField
+        ? `Must be at least ${sizedFields[tooSmallField].min} characters long`
+        : `Must be at most ${sizedFields[tooLargeField].max} characters long`,
+      location: tooSmallField || tooLargeField
+    });
+  }
   User.findOne({
     username: req.user.username
   }).then(user => {
@@ -150,7 +224,7 @@ router.delete("/:post/:comment", jwtAuth, (req, res) => {
     .then(post => {
       post.comments.id(req.params.comment).remove();
       post.save();
-      res.status(204).end();
+      res.status(201).json(req.params.comment);
     })
     .catch(err => console.error(err));
 });
