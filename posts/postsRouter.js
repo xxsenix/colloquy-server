@@ -44,28 +44,15 @@ router.post("/", jwtAuth, jsonParser, (req, res) => {
       return res.status(400).send(message);
     }
   }
-  const explicityTrimmedFields = ["title", "body"];
-  const nonTrimmedField = explicityTrimmedFields.find(
-    field => req.body[field].trim() !== req.body[field]
-  );
-
-  if (nonTrimmedField) {
-    return res.status(422).json({
-      code: 422,
-      reason: "ValidationError",
-      message: "Cannot start or end with whitespace",
-      location: nonTrimmedField
-    });
-  }
 
   const sizedFields = {
     title: {
-      min: 5,
+      min: 1,
       max: 90
     },
     body: {
-      min: 5,
-      max: 90
+      min: 1,
+      max: 200
     }
   };
   const tooSmallField = Object.keys(sizedFields).find(
